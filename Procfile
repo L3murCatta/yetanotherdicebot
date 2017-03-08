@@ -1,1 +1,1 @@
-tbot: python yadb.py
+web: python yadb.py
