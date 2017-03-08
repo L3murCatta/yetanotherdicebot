@@ -1,1 +1,1 @@
-web: python yadb.py
+worker: python yadb.py
