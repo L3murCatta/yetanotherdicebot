@@ -1,4 +1,5 @@
 from random import randint
+from secrets import choice
 from telegram.ext import Updater, CommandHandler
 digits = {0,1,2,3,4,5,6,7,8,9}
 
@@ -8,6 +9,13 @@ def nextNonDigit(msg, i):
             return c
     else:
         return -1
+
+def customrandom(a, b):
+    #return randint(a, b)
+    return choice(range(a, b+1))
+
+def d(bot, update):
+    dice(bot, update)
 
 def dice(bot, update):
     message = update.message.text[6:]
@@ -33,12 +41,12 @@ def dice(bot, update):
         mod = message[sign+1:]
         if message[sign] == '-':
             mod = '-' + mod
-    res = [randint(1, int(val)) for i in range(num)]
+    res = [customrandom(1, int(val)) for i in range(num)]
     if excl:
         resp = '{} rolled: {}'.format(update.message.from_user.username, res)
         temp = list(filter(lambda x : x == int(val), res))
         while len(temp) > 0:
-            temp = [randint(1, int(val)) for i in temp]
+            temp = [customrandom(1, int(val)) for i in temp]
             res.extend(temp)
             resp += '\nrerolls: {}'.format(temp)
             temp = list(filter(lambda x : x == int(val), temp))
@@ -50,6 +58,7 @@ def dice(bot, update):
 updater = Updater('379931845:AAH-3mrlthdNokUKRx21PZ6rmIiYZZGp5vY')
 
 updater.dispatcher.add_handler(CommandHandler('dice', dice))
+updater.dispatcher.add_handler(CommandHandler('d', d))
 
 updater.start_polling()
 updater.idle()
