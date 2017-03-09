@@ -18,7 +18,7 @@ def d(bot, update):
     dice(bot, update)
 
 def dice(bot, update):
-    message = update.message.text[6:]
+    message = update.message.text[update.message.text.find(' ')+1:]
     d = message.find('d')
     plus = message.find('+')
     minus = message.find('-')
