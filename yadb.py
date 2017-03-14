@@ -18,36 +18,36 @@ def splitbysigns(st):
         st = st.strip()
         st = st.split(maxsplit=1)
         if st[0][0] != "x":
-            raise Exception("Wrong posiiton of rolls number ('x')")
+            raise Exception("Wrong position of rolls number ('x')")
         try:
             numtimes = int(st[0][1:])
         except Exception:
             raise Exception("Bad rolls number: {}".format(st[0]))
         st = st[1]
-		
-	st = st.replace(" ", "")
-	nopluses = st.split("+")
-	pluses = []
-	added = ""
-	for element in nopluses:
-            if element[len(element)-1] in ["a", "r", "t", "f", "!", "p", ">", "<", "="]:
-                added = "+" + element
-            else:
-                pluses.append(added + "+" + element)
-                added = ""
-	minuses = []
-	for substring in pluses:
-            nominuses = substring.split("-")
+        
+    st = st.replace(" ", "")
+    nopluses = st.split("+")
+    pluses = []
+    added = ""
+    for element in nopluses:
+        if element[len(element)-1] in ["a", "r", "t", "f", "!", "p", ">", "<", "="]:
+            added = "+" + element
+        else:
+            pluses.append(added + "+" + element)
             added = ""
-            for element in nominuses:
-                if element[0] != "+":
-                    added = added + "-"
-                if element[len(element)-1] in ["a", "r", "t", "f", "!", "p", ">", "<", "="]:
-                    added = added + element
-                else:
-                    minuses.append(added + element)
-                    added = ""
-	return minuses
+    minuses = []
+    for substring in pluses:
+        nominuses = substring.split("-")
+        added = ""
+        for element in nominuses:
+            if element[0] != "+":
+                added = added + "-"
+            if element[len(element)-1] in ["a", "r", "t", "f", "!", "p", ">", "<", "="]:
+                added = added + element
+            else:
+                minuses.append(added + element)
+                added = ""
+    return minuses
 
 class diceroll:
     def __init__(self):
