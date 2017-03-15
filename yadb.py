@@ -35,9 +35,8 @@ def customrandom(amount, low, high):
             keynum = -1
         return customrandom(amount, low, high)
     
-    if resp.get("error") == None:
-        j = resp.json()
-        return j.get('result').get('random').get('data')
+    if resp.json().get("error") == None:
+        return resp.json().get('result').get('random').get('data')
     else:
         keynum += 1
         if keynum >= len(keys):
