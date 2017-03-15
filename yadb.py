@@ -354,11 +354,17 @@ def rerollexplode(d, r, total, res):
     return r, total, res
 
 def roll(d, sign):
+    global fate
+    fate = 0
+    if d.die == -1:
+        fate = 1
+        d.die = 3
+        d.modifier -= 2
+    
     r = rolldie(d.amount, d.die)
     res = stringify(r, d.modifier)
     total = sum(r)+len(r)*d.modifier
     r, total, res = rerollexplode(d, r, total, res)
-
     
     if d.drop + d.highdrop > len(r):
         raise Exception("More dice dropped than rolled")
