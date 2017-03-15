@@ -14,6 +14,7 @@ numtimes = 1
 
 def splitbysigns(st):
     global numtimes
+    numtimes = 1
     if "x" in st:
         st = st.strip()
         st = st.split(maxsplit=1)
