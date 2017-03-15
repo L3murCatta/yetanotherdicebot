@@ -1,17 +1,65 @@
-#from random import randint
 from secrets import choice
+from requests import post
 from telegram.ext import Updater, CommandHandler
-#import re
 
-def customrandom(a, b):
-    #return randint(a, b)
-    return choice(range(a, b+1))
+def customrandom(amount, low, high):
+    global currentdate, keynum
+    keys = ["0496cfd9-1838-45ec-a0de-19452f3d60a2",
+            "443605e5-1b6f-4918-934e-5d4813b7c9a0",
+            "9145ee61-696c-4fb4-9c8a-70e92b535265"]
+    request = {
+        "jsonrpc": "2.0",
+        "method": "generateIntegers",
+        "params": {
+            "apiKey": keys[keynum],
+            "n": amount,
+            "min": low,
+            "max": high
+            },
+        "id": 1
+    }
+    if keynum < 0:
+        if currentdate != date.today():
+            currentdate = date.today()
+            keynum = 0
+            return customrandom(amount, low, high)
+        return [choice(range(low, high+1)) for _ in range(amount)]
+    
+    try:
+        resp = post("https://api.random.org/json-rpc/1/invoke", json=request, timeout=5)
+    except Exception:
+        keynum += 1
+        if keynum >= len(keys):
+            keynum = -1
+        return customrandom(amount, low, high)
+    
+    if resp.get("error") == None:
+        return resp.json().get('result').get('random').get('data')
+    else:
+        keynum += 1
+        if keynum >= len(keys):
+            keynum = -1
+        return customrandom(amount, low, high)
 
 def rolldie(amount, die):
-    return [customrandom(1, die) for _ in range(amount)]
+    res = []
+    if mode == 0:
+        return customrandom(amount, 1, die)
+    r = customrandom(amount*3, 1, die)
+    for i in range(amount):
+        a = r[i]
+        b = r[i+amount]
+        c = r[i+2*amount]
+        if a > b and mode == 1 or a < b and mode == -1:
+            res.append(a)
+        else:
+            res.append(c)
+    return res
 
 numtimes = 1
 fate = 0
+keynum = 0
+currentdate = date.today()
 
 def splitbysigns(st):
     global numtimes
