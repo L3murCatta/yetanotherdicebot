@@ -66,7 +66,7 @@ class diceroll:
         print(', '.join("%s: %s" % item for item in vars(self).items()))
 
 def getnum(st):
-    for i in range(1, len(st)):
+    for i in range(1, len(st)+1):
         if not st[:i].isdigit():
             return [st[:i-1], st[i-1:]]
     return [st, ""]
@@ -179,6 +179,12 @@ def parsemodifiers(d, st):
                 mod = int(st[0]) * sign
                 st = st[1]
                 low, high = parserange(d.die, mod, d.modifier, comp)
+        if c in ["d", "k"]:
+            print(len(st))
+            if len(st) < 2:
+                raise Exception("A numerical value is required")
+            if st[1] in ["h", "l"] and len(st)<3:
+                raise Exception("A numerical value is required")
         
         ##################rerolls#################################
         if c == "r":
@@ -396,7 +402,7 @@ def parseandroll(st):
                     except Exception:
                         raise Exception("Bad number: {}".format(p))
                     totalst += p
-                    
+                
         except Exception as e:
             res = str(e)
             return res
