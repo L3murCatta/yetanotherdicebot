@@ -368,11 +368,11 @@ def roll(d, sign):
 
 def parseandroll(st):
     parts = splitbysigns(st)
-    total = 0
-    totalst = ""
     res = ""
 
-    for _ in range(0, numtimes):	
+    for _ in range(0, numtimes):
+        total = 0
+        totalst = ""
         try:
             for p in parts:
                 if "d" in p:
@@ -386,7 +386,7 @@ def parseandroll(st):
                     t, s = roll(d, sign)
                     res += s
                     total += t
-                    totalst += "{}".format(abs(t))
+                    totalst += str(abs(t))
                 else:
                     try:
                         total += int(p)
@@ -401,10 +401,10 @@ def parseandroll(st):
         if totalst[0] == "+":
             totalst = totalst[1:]
         if len(parts) > 1:
-            res += "Total: {} = {}\n\n".format(totalst, total)
-        else:
-            res = res[:-1]
-    res = res[:-2]
+            res += "Total: {} = {}\n".format(totalst, total)
+        if _ < numtimes-1:
+            res += "\n"
+    res = res[:-1]
     return res
 
 def dice(bot, update):
