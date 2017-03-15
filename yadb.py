@@ -11,6 +11,7 @@ def rolldie(amount, die):
     return [customrandom(1, die) for _ in range(amount)]
 
 numtimes = 1
+fate = 0
 
 def splitbysigns(st):
     global numtimes
@@ -19,28 +20,32 @@ def splitbysigns(st):
         st = st.strip()
         st = st.split(maxsplit=1)
         if st[0][0] != "x":
-            raise Exception("Wrong position of rolls number ('x')")
+            raise Exception("Wrong posiiton of rolls number ('x')")
         try:
             numtimes = int(st[0][1:])
         except Exception:
             raise Exception("Bad rolls number: {}".format(st[0]))
         st = st[1]
-        
+            
     st = st.replace(" ", "")
     nopluses = st.split("+")
     pluses = []
     added = ""
     for element in nopluses:
+        if element[0] != "-":
+            added += "+"
         if element[len(element)-1] in ["a", "r", "t", "f", "!", "p", ">", "<", "="]:
-            added = "+" + element
+            added += element
         else:
-            pluses.append(added + "+" + element)
+            pluses.append(added + element)
             added = ""
     minuses = []
     for substring in pluses:
         nominuses = substring.split("-")
         added = ""
         for element in nominuses:
+            if element == "":
+                continue
             if element[0] != "+":
                 added = added + "-"
             if element[len(element)-1] in ["a", "r", "t", "f", "!", "p", ">", "<", "="]:
@@ -291,16 +296,26 @@ def parseroll(st):
     d = parsemodifiers(d, sp)
     return d
 
+def numform(i):
+    if not fate:
+        return i
+    if i<2:
+        return "-"
+    if i == 2:
+        return "0"
+    if i > 2:
+        return "+"
+
 def stringify(r, modifier):
     res = ""
     if not r:
         return res
     res = "["
     for i in r:
-        if modifier != 0:
-            res += "{}({}), ".format(i+modifier, i)
+        if not fate and modifier != 0 or fate and modifier != -2:
+            res += "{}({}), ".format(i+modifier, numform(i))
         else:
-            res += "{}, ".format(i)
+            res += "{}, ".format(numform(i))
     res = res[:-2] + "]"
     return res
 
@@ -383,7 +398,6 @@ def parseandroll(st):
         try:
             for p in parts:
                 if "d" in p:
-                    totalst += p[0]
                     if p[0] == "-":
                         sign = -1
                     else:
@@ -396,7 +410,9 @@ def parseandroll(st):
                     t, s = roll(d, sign)
                     res += s
                     total += t
-                    totalst += str(abs(t))
+                    if t >= 0:
+                        totalst += "+"
+                    totalst += str(t)
                 else:
                     try:
                         total += int(p)
