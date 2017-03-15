@@ -180,10 +180,10 @@ def parsemodifiers(d, st):
                 st = st[1]
                 low, high = parserange(d.die, mod, d.modifier, comp)
         if c in ["d", "k"]:
-            print(len(st))
-            if len(st) < 2:
+            #print(len(st))
+            if len(st) < 1:
                 raise Exception("A numerical value is required")
-            if st[1] in ["h", "l"] and len(st)<3:
+            if st[0] in ["h", "l"] and len(st)<2:
                 raise Exception("A numerical value is required")
         
         ##################rerolls#################################
