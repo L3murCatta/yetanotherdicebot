@@ -383,6 +383,9 @@ def parseandroll(st):
                         sign = 1
                     p = p[1:]
                     d = parseroll(p)
+                    if sign == -1:
+                        res += "-"
+                    res += p+": "
                     t, s = roll(d, sign)
                     res += s
                     total += t
@@ -393,7 +396,7 @@ def parseandroll(st):
                     except Exception:
                         raise Exception("Bad number: {}".format(p))
                     totalst += p
-                        
+                    
         except Exception as e:
             res = str(e)
             return res
