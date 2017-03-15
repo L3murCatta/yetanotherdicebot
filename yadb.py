@@ -61,6 +61,7 @@ numtimes = 1
 fate = 0
 keynum = 0
 currentdate = date.today()
+mode = 0
 
 def splitbysigns(st):
     global numtimes
@@ -488,6 +489,21 @@ def parseandroll(st):
     res = res[:-1]
     return res
 
+def good(bot, update):
+    global mode
+    mode = 1
+    update.message.reply_text("Commencing good mode")
+
+def korean(bot, update):
+    global mode
+    mode = 0
+    update.message.reply_text("Commencing korean mode")
+
+def bad(bot, update):
+    global mode
+    mode = -1
+    update.message.reply_text("Commencing bad mode")
+
 def dice(bot, update):
     update.message.reply_text(parseandroll(update.message.text[update.message.text.find(' ')+1:]))
 
@@ -577,6 +593,9 @@ updater = Updater('379931845:AAH-3mrlthdNokUKRx21PZ6rmIiYZZGp5vY')
 
 updater.dispatcher.add_handler(CommandHandler('dice', dice))
 updater.dispatcher.add_handler(CommandHandler('d', d))
+updater.dispatcher.add_handler(CommandHandler('good', good))
+updater.dispatcher.add_handler(CommandHandler('korean', korean))
+updater.dispatcher.add_handler(CommandHandler('bad', bad))
 
 updater.start_polling()
 updater.idle()
