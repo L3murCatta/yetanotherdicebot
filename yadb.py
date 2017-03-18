@@ -496,24 +496,24 @@ def parseandroll(st, mode):
 
 def good(bot, update):
     global modes
-    modes[bot.getChat(chat_id)] = 1
+    modes[bot.getChat().id] = 1
     update.message.reply_text("Commencing good mode")
 
 def normal(bot, update):
     global modes
-    modes[bot.getChat(chat_id)] = 0
+    modes[bot.getChat().id] = 0
     update.message.reply_text("Commencing normal mode")
 
 def bad(bot, update):
     global modes
-    modes[bot.getChat(chat_id)] = -1
+    modes[bot.getChat().id] = -1
     update.message.reply_text("Commencing bad mode")
 
 def dice(bot, update):
     try:
-        mode = modes[bot.getChat(chat_id)]
+        mode = modes[bot.getChat().id]
     except Exception:
-        modes[bot.getChat(chat_id)] = 0
+        modes[bot.getChat().id] = 0
         mode = 0
     update.message.reply_text("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good") + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
 
