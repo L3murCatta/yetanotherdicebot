@@ -7,7 +7,12 @@ def customrandom(amount, low, high):
     global currentdate, keynum
     keys = ["0496cfd9-1838-45ec-a0de-19452f3d60a2",
             "443605e5-1b6f-4918-934e-5d4813b7c9a0",
-            "9145ee61-696c-4fb4-9c8a-70e92b535265"]
+            "9145ee61-696c-4fb4-9c8a-70e92b535265",
+            "1868a3f3-dc87-4493-906b-2964c0cfab76",
+            "a7dff9fd-94bb-4511-935b-610a584e207f",
+            "8697f146-beb8-4c8f-9609-d03f6e7db547",
+            "8672f846-3322-4a88-98c0-588743060f9f",
+            "549f16f8-9fa7-4408-9ecc-5e7d5f7000ce"]
     request = {
         "jsonrpc": "2.0",
         "method": "generateIntegers",
@@ -19,13 +24,12 @@ def customrandom(amount, low, high):
             },
         "id": 1
     }
+    if currentdate != date.today():
+        currentdate = date.today()
+        keynum = 0
+        return customrandom(amount, low, high)
     if keynum < 0:
-        if currentdate != date.today():
-            currentdate = date.today()
-            keynum = 0
-            return customrandom(amount, low, high)
         return [choice(range(low, high+1)) for _ in range(amount)]
-    
     try:
         resp = post("https://api.random.org/json-rpc/1/invoke",
                     json = request, timeout = 5)
@@ -43,7 +47,7 @@ def customrandom(amount, low, high):
             keynum = -1
         return customrandom(amount, low, high)
 
-def rolldie(amount, die):
+def rolldie(amount, die, mode):
     res = []
     if mode == 0:
         return customrandom(amount, 1, die)
@@ -62,7 +66,7 @@ numtimes = 1
 fate = 0
 keynum = 0
 currentdate = date.today()
-mode = 0
+modes = {}
 
 def splitbysigns(st):
     global numtimes
@@ -370,7 +374,7 @@ def stringify(r, modifier):
     res = res[:-2] + "]"
     return res
 
-def rerollexplode(d, r, total, res):
+def rerollexplode(d, r, total, res, mode):
     toreroll = 0
     toexplode = 0
     rr = r[:]
@@ -381,7 +385,7 @@ def rerollexplode(d, r, total, res):
             toreroll += 1
     r = rr
     while toreroll > 0:
-        r1 = rolldie(toreroll, d.die)
+        r1 = rolldie(toreroll, d.die, mode)
         res += "r"+stringify(r1, d.modifier)
         total += sum(r1)+len(r1)*d.modifier
         toreroll = 0
@@ -395,16 +399,16 @@ def rerollexplode(d, r, total, res):
     
     toexplode += sum(i in d.explode for i in r)
     if toexplode > 0:
-        r1 = rolldie(toexplode, d.die)
+        r1 = rolldie(toexplode, d.die, mode)
         res += "!"+stringify(r1, d.modifier)
         total += sum(r1)+len(r1)*d.modifier
 
-        r2, total, res = rerollexplode(d, r1, total, res)
+        r2, total, res = rerollexplode(d, r1, total, res, mode)
         r += r2
             
     return r, total, res
 
-def roll(d, sign):
+def roll(d, sign, mode):
     global fate
     fate = 0
     if d.die == -1:
@@ -412,10 +416,10 @@ def roll(d, sign):
         d.die = 3
         d.modifier -= 2
     
-    r = rolldie(d.amount, d.die)
+    r = rolldie(d.amount, d.die, mode)
     res = stringify(r, d.modifier)
     total = sum(r)+len(r)*d.modifier
-    r, total, res = rerollexplode(d, r, total, res)
+    r, total, res = rerollexplode(d, r, total, res, mode)
     
     if d.drop + d.highdrop > len(r):
         raise Exception("More dice dropped than rolled")
@@ -445,7 +449,7 @@ def roll(d, sign):
         res += "Net successes: {}\n".format(successes-failures)
     return total, res
 
-def parseandroll(st):
+def parseandroll(st, mode):
     parts = splitbysigns(st)
     res = ""
 
@@ -464,7 +468,7 @@ def parseandroll(st):
                     if sign == -1:
                         res += "-"
                     res += p+": "
-                    t, s = roll(d, sign)
+                    t, s = roll(d, sign, mode)
                     res += s
                     total += t
                     if t >= 0:
@@ -491,22 +495,27 @@ def parseandroll(st):
     return res
 
 def good(bot, update):
-    global mode
-    mode = 1
+    global modes
+    modes[update.chat.id] = 1
     update.message.reply_text("Commencing good mode")
 
 def normal(bot, update):
-    global mode
-    mode = 0
+    global modes
+    modes[update.chat.id] = 0
     update.message.reply_text("Commencing normal mode")
 
 def bad(bot, update):
-    global mode
-    mode = -1
+    global modes
+    modes[update.chat.id] = -1
     update.message.reply_text("Commencing bad mode")
 
 def dice(bot, update):
-    update.message.reply_text(parseandroll(update.message.text[update.message.text.find(' ')+1:]))
+    try:
+        mode = modes[update.chat.id]
+    except Exception:
+        modes[update.chat.id] = 0
+        mode = 0
+    update.message.reply_text("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good") + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
 
 def d(bot, update):
     dice(bot, update)
