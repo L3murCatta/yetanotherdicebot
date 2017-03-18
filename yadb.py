@@ -495,10 +495,10 @@ def good(bot, update):
     mode = 1
     update.message.reply_text("Commencing good mode")
 
-def korean(bot, update):
+def normal(bot, update):
     global mode
     mode = 0
-    update.message.reply_text("Commencing korean mode")
+    update.message.reply_text("Commencing normal mode")
 
 def bad(bot, update):
     global mode
@@ -595,7 +595,7 @@ updater = Updater('379931845:AAH-3mrlthdNokUKRx21PZ6rmIiYZZGp5vY')
 updater.dispatcher.add_handler(CommandHandler('dice', dice))
 updater.dispatcher.add_handler(CommandHandler('d', d))
 updater.dispatcher.add_handler(CommandHandler('good', good))
-updater.dispatcher.add_handler(CommandHandler('korean', korean))
+updater.dispatcher.add_handler(CommandHandler('normal', normal))
 updater.dispatcher.add_handler(CommandHandler('bad', bad))
 
 updater.start_polling()
