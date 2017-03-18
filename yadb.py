@@ -498,27 +498,27 @@ def good(bot, update):
     global modes
     print(modes)
     print(update)
-    print(update.extract_chat_and_user())
-    print(update.extract_chat_and_user()[0])
-    print(update.extract_chat_and_user()[0].id)
-    modes[update.extract_chat_and_user()[0].id] = 1
+    print(update.message)
+    print(update.message.chat)
+    print(update.message.chat.id)
+    modes[update.message.chat.id] = 1
     update.message.reply_text("Commencing good mode")
 
 def normal(bot, update):
     global modes
-    modes[update.extract_chat_and_user()[0].id] = 0
+    modes[update.message.chat.id] = 0
     update.message.reply_text("Commencing normal mode")
 
 def bad(bot, update):
     global modes
-    modes[update.extract_chat_and_user()[0].id] = -1
+    modes[update.message.chat.id] = -1
     update.message.reply_text("Commencing bad mode")
 
 def dice(bot, update):
     try:
-        mode = modes[update.extract_chat_and_user()[0].id]
+        mode = modes[update.message.chat.id]
     except Exception:
-        modes[update.extract_chat_and_user()[0].id] = 0
+        modes[update.message.chat.id] = 0
         mode = 0
     update.message.reply_text("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good") + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
 
