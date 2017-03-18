@@ -496,6 +496,11 @@ def parseandroll(st, mode):
 
 def good(bot, update):
     global modes
+    print(modes)
+    print(update)
+    print(update.extract_chat_and_user())
+    print(update.extract_chat_and_user()[0])
+    print(update.extract_chat_and_user()[0].id)
     modes[update.extract_chat_and_user()[0].id] = 1
     update.message.reply_text("Commencing good mode")
 
