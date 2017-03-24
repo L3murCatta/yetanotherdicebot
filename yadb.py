@@ -326,25 +326,25 @@ def parsemodifiers(d, st):
                     d.drop =	d.amount - int(st[0])
             st = st[1]
             continue
-            ################constraint####################
-            if c == "c":
-                comp, st = parsecomp(st)
-                if comp == 0:
-                    raise Exception("A comparison sign is required")
-                sign, st = parsesign(st)
-                st = getnum(st)
-                mod = int(st[0]) * sign
-                st = st[1]
-                if comp == 1:
-                    d.lowconstr = mod+1
-                if comp == 2:
-                    d.lowconstr = mod
-                if comp == 3:
-                    d.highconstr = mod-1
-                if comp == 4:
-                    d.highconstr = mod
-                if d.highconstr < d.lowconstr:
-                    raise Exception("Bad constraint")        
+        ################constraint####################
+        if c == "c":
+            comp, st = parsecomp(st)
+            if comp == 0:
+                raise Exception("A comparison sign is required")
+            sign, st = parsesign(st)
+            st = getnum(st)
+            mod = int(st[0]) * sign
+            st = st[1]
+            if comp == 1:
+                d.lowconstr = mod+1
+            if comp == 2:
+                d.lowconstr = mod
+            if comp == 3:
+                d.highconstr = mod-1
+            if comp == 4:
+                d.highconstr = mod
+            if d.highconstr < d.lowconstr:
+                raise Exception("Bad constraint")        
         raise Exception("Unknown modifier: {}".format(c))
     return d
 
