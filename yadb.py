@@ -383,7 +383,7 @@ def numform(i):
     if i > 2:
         return "+"
 
-def stringify(r, modifier):
+def stringify(r, modifier, sort):
     res = ""
     if not r:
         return res
@@ -452,7 +452,7 @@ def roll(d, sign, mode, sort):
         d.modifier -= 2
     
     r = rolldie(d.amount, d.die, mode)
-    res = stringify(r, d.modifier)
+    res = stringify(r, d.modifier, sort)
     total = sum(r)+len(r)*d.modifier
     r, total, res = rerollexplode(d, r, total, res, mode)
     
