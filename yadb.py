@@ -627,7 +627,7 @@ def w(bot, update):
             z = int(t[3])
     except Exception:
         update.message.reply_text("Bad syntax")
-    res = "/dice {}d10t{}f1".format(x, y)
+    res = "/dice {}d10t>={}f1".format(x, y)
     if z > 0:
         res += "!>={}".format(z)
     update.message.text = res
