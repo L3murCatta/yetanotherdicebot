@@ -125,7 +125,7 @@ class diceroll:
         self.drop = 0
         self.highdrop = 0
         self.lowconstr = -float("Inf")
-	self.highconstr = float("Inf")
+        self.highconstr = float("Inf")
     def debugprint(self):
         print(', '.join("%s: %s" % item for item in vars(self).items()))
 
