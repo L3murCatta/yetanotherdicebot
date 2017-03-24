@@ -454,7 +454,7 @@ def roll(d, sign, mode, sort):
     r = rolldie(d.amount, d.die, mode)
     res = stringify(r, d.modifier, sort)
     total = sum(r)+len(r)*d.modifier
-    r, total, res = rerollexplode(d, r, total, res, mode)
+    r, total, res = rerollexplode(d, r, total, res, mode, sort)
     
     if d.drop + d.highdrop > len(r):
         raise Exception("More dice dropped than rolled")
