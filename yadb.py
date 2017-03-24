@@ -503,7 +503,7 @@ def parseandroll(st, mode, sort):
                     if sign == -1:
                         res += "-"
                     res += p+": "
-                    t, s = roll(d, sign, mode)
+                    t, s = roll(d, sign, mode, sort)
                     res += s
                     total += t
                     if t >= 0:
@@ -577,7 +577,7 @@ def dice(bot, update):
         finally:
             print("He is here")
             print(parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort))
-            update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
+            update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort))
 
 def d(bot, update):
     dice(bot, update)
