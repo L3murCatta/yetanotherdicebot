@@ -344,7 +344,8 @@ def parsemodifiers(d, st):
             if comp == 4:
                 d.highconstr = mod
             if d.highconstr < d.lowconstr:
-                raise Exception("Bad constraint")        
+                raise Exception("Bad constraint")
+            continue
         raise Exception("Unknown modifier: {}".format(c))
     return d
 
