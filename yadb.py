@@ -575,11 +575,61 @@ def dice(bot, update):
             sorts[update.message.chat.id] = 0
             sort = 0
         finally:
-            print("He is here")
-            print(parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort))
             update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort))
 
 def d(bot, update):
+    dice(bot, update)
+
+def f(bot, update):
+    t = update.message.text
+    res = "/dice 4dF"
+    x = 0
+    if t.strip().find(" ") != -1:
+        try:
+            x = int(t[t.find(" ")+1:])
+        except Exception:
+            update.message.reply_text("Bad syntax")
+    if x > 0:
+        res += "+"
+    if x != 0:
+        res += str(x)
+    update.message.text = res
+    dice(bot, update)
+	
+def g(bot, update):
+    update.message.text = "/dice 3d6"
+    dice(bot, update)
+	
+def n(bot, update):
+    x = 0
+    y = 10
+    t = update.message.text.split()
+    try:
+        x = int(t[1])
+        if len(t) > 2:
+            y = int(t[2])
+    except Exception:
+        update.message.reply_text("Bad syntax")
+    update.message.text = "/dice {}d10t>=8!>={}".format(x, y)
+    dice(bot, update)
+	
+def w(bot, update):
+    x = 0
+    y = 6
+    z = 0
+    t = update.message.text.split()
+    try:
+        x = int(t[1])
+        if len(t) > 2:
+            y = int(t[2])
+        if len(t) > 3:
+            z = int(t[3])
+    except Exception:
+        update.message.reply_text("Bad syntax")
+    res = "/dice {}d10t{}".format(x, y)
+    if z > 0:
+        res += "!>={}".format(z)
+    update.message.text = res
     dice(bot, update)
 	
 #print(parseandroll("x2 10d4a1t>3f2 - 16d8!mt5 + 5d4kh2"))
@@ -669,6 +719,10 @@ updater.dispatcher.add_handler(CommandHandler('good', good))
 updater.dispatcher.add_handler(CommandHandler('normal', normal))
 updater.dispatcher.add_handler(CommandHandler('bad', bad))
 updater.dispatcher.add_handler(CommandHandler('sort', sortf))
+updater.dispatcher.add_handler(CommandHandler('f', f))
+updater.dispatcher.add_handler(CommandHandler('g', g))
+updater.dispatcher.add_handler(CommandHandler('n', n))
+updater.dispatcher.add_handler(CommandHandler('w', w))
 
 updater.start_polling()
 updater.idle()
