@@ -67,6 +67,7 @@ fate = 0
 keynum = 0
 currentdate = date.today()
 modes = {}
+sorts = {}
 
 def splitbysigns(st):
     global numtimes
@@ -123,6 +124,8 @@ class diceroll:
         self.penetrate = []
         self.drop = 0
         self.highdrop = 0
+        self.lowconstr = -float("Inf")
+	self.highconstr = float("Inf")
     def debugprint(self):
         print(', '.join("%s: %s" % item for item in vars(self).items()))
 
@@ -323,6 +326,25 @@ def parsemodifiers(d, st):
                     d.drop =	d.amount - int(st[0])
             st = st[1]
             continue
+            ################constraint####################
+            if c == "c":
+                comp, st = parsecomp(st)
+                if comp == 0:
+                    raise Exception("A comparison sign is required")
+                sign, st = parsesign(st)
+                st = getnum(st)
+                mod = int(st[0]) * sign
+                st = st[1]
+                if comp == 1:
+                    d.lowconstr = mod+1
+                if comp == 2:
+                    d.lowconstr = mod
+                if comp == 3:
+                    d.highconstr = mod-1
+                if comp == 4:
+                    d.highconstr = mod
+                if d.highconstr < d.lowconstr:
+                    raise Exception("Bad constraint")        
         raise Exception("Unknown modifier: {}".format(c))
     return d
 
@@ -365,18 +387,32 @@ def stringify(r, modifier):
     res = ""
     if not r:
         return res
+    if sort == 1:
+        r.sort()
+    if sort == -1:
+        r.sort(reverse = True)
     res = "["
     for i in r:
-        if not fate and modifier != 0 or fate and modifier != -2:
-            res += "{}({}), ".format(i+modifier, numform(i))
-        else:
-            res += "{}, ".format(numform(i))
+            ci = max(d.lowconstr, min(d.highconstr, i+modifier))
+            if not fate and modifier != 0 or fate and modifier != -2 or ci != i+modifier:
+                res += "{}({}), ".format(ci, numform(i))
+            else:
+                res += "{}, ".format(numform(i))
     res = res[:-2] + "]"
     return res
 
-def rerollexplode(d, r, total, res, mode):
+def rerollexplode(d, r, total, res, mode, sort):
     toreroll = 0
     toexplode = 0
+    
+    for i in range(0, len(r)):
+        if r[i]+d.modifier < d.lowconstr:
+            total += d.lowconstr - r[i]-d.modifier
+            r[i] = d.lowconstr - d.modifier
+        if r[i]+d.modifier > d.highconstr:
+            total -= r[i]+d.modifier - d.highconstr
+            r[i] = d.highconstr - d.modifier
+
     rr = r[:]
     for i in r:
         if i in d.reroll:
@@ -386,7 +422,7 @@ def rerollexplode(d, r, total, res, mode):
     r = rr
     while toreroll > 0:
         r1 = rolldie(toreroll, d.die, mode)
-        res += "r"+stringify(r1, d.modifier)
+        res += "r"+stringify(r1, d.modifier, sort)
         total += sum(r1)+len(r1)*d.modifier
         toreroll = 0
         rr = r1[:]
@@ -396,19 +432,18 @@ def rerollexplode(d, r, total, res, mode):
                 total -= i + d.modifier
                 toreroll += 1
         r += rr
-    
+
     toexplode += sum(i in d.explode for i in r)
     if toexplode > 0:
         r1 = rolldie(toexplode, d.die, mode)
-        res += "!"+stringify(r1, d.modifier)
+        res += "!"+stringify(r1, d.modifier, sort)
         total += sum(r1)+len(r1)*d.modifier
-
-        r2, total, res = rerollexplode(d, r1, total, res, mode)
+        r2, total, res = rerollexplode(d, r1, total, res, mode, sort)
         r += r2
-            
+    
     return r, total, res
 
-def roll(d, sign, mode):
+def roll(d, sign, mode, sort):
     global fate
     fate = 0
     if d.die == -1:
@@ -449,7 +484,7 @@ def roll(d, sign, mode):
         res += "Net successes: {}\n".format(successes-failures)
     return total, res
 
-def parseandroll(st, mode):
+def parseandroll(st, mode, sort):
     parts = splitbysigns(st)
     res = ""
 
@@ -494,6 +529,24 @@ def parseandroll(st, mode):
     res = res[:-1]
     return res
 
+def sortf(bot, update):
+    global sorts
+    if update.message.text.strip().find(' ') == -1:
+        sorts[update.message.chat.id] = 1
+        update.message.reply_text("Sorting enabled")
+        return
+    t = update.message.text[update.message.text.find(' ')+1:]
+    if t == "d":
+        sorts[update.message.chat.id] = -1
+        update.message.reply_text("Descending sorting enabled")
+        return
+    if t == "off":
+        sorts[update.message.chat.id] = 0
+        update.message.reply_text("Sorting disabled")
+        return
+    sorts[update.message.chat.id] = 1
+    update.message.reply_text("Sorting enabled")
+
 def good(bot, update):
     global modes
     modes[update.message.chat.id] = 1
@@ -515,8 +568,12 @@ def dice(bot, update):
     except Exception:
         modes[update.message.chat.id] = 0
         mode = 0
-    finally:
-        update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
+    try:
+        sort = sorts[update.message.chat.id]
+    except Exception:
+        sorts[update.message.chat.id] = 0
+        sort = 0
+    update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
 
 def d(bot, update):
     dice(bot, update)
@@ -607,6 +664,7 @@ updater.dispatcher.add_handler(CommandHandler('d', d))
 updater.dispatcher.add_handler(CommandHandler('good', good))
 updater.dispatcher.add_handler(CommandHandler('normal', normal))
 updater.dispatcher.add_handler(CommandHandler('bad', bad))
+updater.dispatcher.add_handler(CommandHandler('sort', sortf))
 
 updater.start_polling()
 updater.idle()
