@@ -568,12 +568,14 @@ def dice(bot, update):
     except Exception:
         modes[update.message.chat.id] = 0
         mode = 0
-    try:
-        sort = sorts[update.message.chat.id]
-    except Exception:
-        sorts[update.message.chat.id] = 0
-        sort = 0
-    update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
+    finally:        
+        try:
+            sort = sorts[update.message.chat.id]
+        except Exception:
+            sorts[update.message.chat.id] = 0
+            sort = 0
+        finally:
+            update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
 
 def d(bot, update):
     dice(bot, update)
