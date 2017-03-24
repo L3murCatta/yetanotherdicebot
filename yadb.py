@@ -576,7 +576,7 @@ def dice(bot, update):
             sort = 0
         finally:
             print("He is here")
-            print(parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
+            print(parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort))
             update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode))
 
 def d(bot, update):
