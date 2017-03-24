@@ -383,7 +383,7 @@ def numform(i):
     if i > 2:
         return "+"
 
-def stringify(r, modifier, sort):
+def stringify(d, r, modifier, sort):
     res = ""
     if not r:
         return res
@@ -422,7 +422,7 @@ def rerollexplode(d, r, total, res, mode, sort):
     r = rr
     while toreroll > 0:
         r1 = rolldie(toreroll, d.die, mode)
-        res += "r"+stringify(r1, d.modifier, sort)
+        res += "r"+stringify(d, r1, d.modifier, sort)
         total += sum(r1)+len(r1)*d.modifier
         toreroll = 0
         rr = r1[:]
@@ -436,7 +436,7 @@ def rerollexplode(d, r, total, res, mode, sort):
     toexplode += sum(i in d.explode for i in r)
     if toexplode > 0:
         r1 = rolldie(toexplode, d.die, mode)
-        res += "!"+stringify(r1, d.modifier, sort)
+        res += "!"+stringify(d, r1, d.modifier, sort)
         total += sum(r1)+len(r1)*d.modifier
         r2, total, res = rerollexplode(d, r1, total, res, mode, sort)
         r += r2
@@ -452,7 +452,7 @@ def roll(d, sign, mode, sort):
         d.modifier -= 2
     
     r = rolldie(d.amount, d.die, mode)
-    res = stringify(r, d.modifier, sort)
+    res = stringify(d, r, d.modifier, sort)
     total = sum(r)+len(r)*d.modifier
     r, total, res = rerollexplode(d, r, total, res, mode, sort)
     
