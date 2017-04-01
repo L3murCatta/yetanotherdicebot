@@ -485,7 +485,7 @@ def rerollexplode(d, r, total, res, mode, sort):
     
     return r, total, res
 
-def roll(d, sign, mode, sort, count):
+def roll(d, sign, mode, sort, count, fl):
     global fate
     fate = 0
     if d.die == -1:
@@ -511,7 +511,7 @@ def roll(d, sign, mode, sort, count):
             total -= i
     
     total *= sign
-    res += " = {}\n".format(("{}" if len(parts) > 1 else "<b>{}</b>").format(total))
+    res += " = {}\n".format(("{}" if fl else "<b>{}</b>").format(total))
 
     if count > 0:
         uniques = sorted(list(set(r)), reverse = (sort == -1))
@@ -559,7 +559,7 @@ def parseandroll(st, mode, sort, count):
                     if sign == -1:
                         res += "-"
                     res += p+": "
-                    t, s = roll(d, sign, mode, sort, count)
+                    t, s = roll(d, sign, mode, sort, count, len(parts) > 1)
                     res += s
                     total += t
                     if t >= 0:
