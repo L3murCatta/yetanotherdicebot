@@ -3,6 +3,54 @@ from secrets import choice
 from requests import post
 from telegram.ext import Updater, CommandHandler
 
+numtimes = 1
+fate = 0
+keynum = 0
+currentdate = date.today()
+modes = {}
+sorts = {}
+counts = {}
+helptext = """========== MODES ==========
+
+"/good" changes the current mode to good.
+"/normal" resets the current mode to normal (set by default).
+"/bad" changes the current mode to bad.
+
+"/sort" enables "sort" mode.
+"/sort d" enables descending sort.
+"/sort off" disables sort (set by default).
+
+"/count" enables "count" mode, displaying every unique value and quantity of its instances in the roll.
+"/count raw" ignores "a" and "c" modifiers when counting (refer to Dice Roll section for details).
+"/count off" disables count (set by default).
+
+========== DICE ROLL ==========
+
+"/d R" and "/dice R" are equivalent commands.
+Examples:
+"/d d20"
+"/d d6 + 2d20+3"
+"/d 12d10r<2" rerolls all dice with values greater than 7. ">", ">=", "<" and "<=" are available comparison signs. If no sign is provided (as in "d20r1", only specified values are rerolled.
+"/d 12d10t>7f1" counts successes and failures (same syntax as above).
+"/d 12d10!>8" explodes all dice under specified conditions (same syntax as above). Use "!m" notation to explode highest possible values only.
+"/d d10c>=3" restricts possible values as specified (same syntax as above). In the given example, if 1 or 2 is rolled, it would be set to 3.
+"/d 20d20a+4" adds the specified modifier to EVERY roll made.
+"/d 4d6d1", "/d 4d6k3" drops or keeps specified number of values. "d" or "dl" drops lowest, "dh" drops highest, "kl" keeps lowest, "k" or "kh" keeps highest.
+
+Any aforementioned modifiers can be used in any combinations.
+Use "xN" notation right after the command (e. g. "/d x6 4d6d1") to do multiple identical rolls.
+
+========== SHORTCUTS ==========
+
+"/g" rolls 3d6 (GURPS roll).
+"/f" rolls 4 Fate dice (FATE roll). "/f X" adds X to the roll.
+"/w X Y Z" rolls Xd10t>Yf1!>=Z (old World of Darkness roll). Only X is mandatory; Y is set at 6 by default.
+"/n X Y" rolls Xd10t>7!>=Y (new World of Darkness roll). Only X is mandatory; Y is set at 10 by default.
+
+"xN" notation works for all shortcuts as well.
+
+Good luck!"""
+
 def customrandom(amount, low, high):
     global currentdate, keynum
     keys = ["0496cfd9-1838-45ec-a0de-19452f3d60a2",
@@ -61,13 +109,6 @@ def rolldie(amount, die, mode):
         else:
             res.append(c)
     return res
-
-numtimes = 1
-fate = 0
-keynum = 0
-currentdate = date.today()
-modes = {}
-sorts = {}
 
 def splitbysigns(st):
     global numtimes
@@ -444,7 +485,7 @@ def rerollexplode(d, r, total, res, mode, sort):
     
     return r, total, res
 
-def roll(d, sign, mode, sort):
+def roll(d, sign, mode, sort, count):
     global fate
     fate = 0
     if d.die == -1:
@@ -471,7 +512,21 @@ def roll(d, sign, mode, sort):
     
     total *= sign
     res+= " = {}\n".format(total)
-    
+
+    if count > 0:
+        uniques = sorted(list(set(r)), reverse = (sort == -1))
+        for u in uniques:
+            c = r.count(u)
+            if fate and (d.modifier == -2 or count == 2):
+                v = numform(u)
+            else:
+                if count == 2:
+                    v = u
+                else:
+                    v = u + d.modifier
+            res += "[{}: x{}], ".format(v, c)
+        res = res[:-2] + "\n"
+
     if d.drop + d.highdrop > 0:
         res += "Dropped: {}\n".format(sortr[:d.drop]+sortr[len(sortr)-d.highdrop:])
     
@@ -485,7 +540,7 @@ def roll(d, sign, mode, sort):
         res += "Net successes: {}\n".format(successes-failures)
     return total, res
 
-def parseandroll(st, mode, sort):
+def parseandroll(st, mode, sort, count):
     parts = splitbysigns(st)
     res = ""
 
@@ -504,7 +559,7 @@ def parseandroll(st, mode, sort):
                     if sign == -1:
                         res += "-"
                     res += p+": "
-                    t, s = roll(d, sign, mode, sort)
+                    t, s = roll(d, sign, mode, sort, count)
                     res += s
                     total += t
                     if t >= 0:
@@ -548,6 +603,24 @@ def sortf(bot, update):
     sorts[update.message.chat.id] = 1
     update.message.reply_text("Sorting enabled")
 
+def countf(bot, update):
+    global counts
+    if update.message.text.strip().find(' ') == -1:
+        counts[update.message.chat.id] = 1
+        update.message.reply_text("Counting enabled")
+        return
+    t = update.message.text[update.message.text.find(' ')+1:]
+    if t == "raw":
+        counts[update.message.chat.id] = 2
+        update.message.reply_text("Couting raw enabled")
+        return
+    if t == "off":
+        counts[update.message.chat.id] = 0
+        update.message.reply_text("Counting disabled")
+        return
+    counts[update.message.chat.id] = 1
+    update.message.reply_text("Counting enabled")
+
 def good(bot, update):
     global modes
     modes[update.message.chat.id] = 1
@@ -576,7 +649,13 @@ def dice(bot, update):
             sorts[update.message.chat.id] = 0
             sort = 0
         finally:
-            update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort))
+            try:
+                count = counts[update.message.chat.id]
+            except Exception:
+                counts[update.message.chat.id] = 0
+                count = 0
+            finally:
+                update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort, count))
 
 def d(bot, update):
     dice(bot, update)
@@ -590,6 +669,7 @@ def f(bot, update):
             x = int(t[t.find(" ")+1:])
         except Exception:
             update.message.reply_text("Bad syntax")
+            return
     if x > 0:
         res += "+"
     if x != 0:
@@ -611,6 +691,7 @@ def n(bot, update):
             y = int(t[2])
     except Exception:
         update.message.reply_text("Bad syntax")
+        return
     update.message.text = "/dice {}d10t>=8!>={}".format(x, y)
     dice(bot, update)
 	
@@ -627,11 +708,15 @@ def w(bot, update):
             z = int(t[3])
     except Exception:
         update.message.reply_text("Bad syntax")
+        return
     res = "/dice {}d10t>={}f1".format(x, y)
     if z > 0:
         res += "!>={}".format(z)
     update.message.text = res
     dice(bot, update)
+
+def helpf(bot, update):
+    update.message.reply_text(helptext)
 	
 #print(parseandroll("x2 10d4a1t>3f2 - 16d8!mt5 + 5d4kh2"))
 
@@ -720,10 +805,12 @@ updater.dispatcher.add_handler(CommandHandler('good', good))
 updater.dispatcher.add_handler(CommandHandler('normal', normal))
 updater.dispatcher.add_handler(CommandHandler('bad', bad))
 updater.dispatcher.add_handler(CommandHandler('sort', sortf))
+updater.dispatcher.add_handler(CommandHandler('count', countf))
 updater.dispatcher.add_handler(CommandHandler('f', f))
 updater.dispatcher.add_handler(CommandHandler('g', g))
 updater.dispatcher.add_handler(CommandHandler('n', n))
 updater.dispatcher.add_handler(CommandHandler('w', w))
+updater.dispatcher.add_handler(CommandHandler('help', helpf))
 
 updater.start_polling()
 updater.idle()
