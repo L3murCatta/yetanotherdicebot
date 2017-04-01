@@ -12,9 +12,9 @@ sorts = {}
 counts = {}
 helptext = """========== MODES ==========
 
-"/good" changes the current mode to good.
+"/good" changes the current mode to good. In this mode, the rolls are slightly higher on average.
 "/normal" resets the current mode to normal (set by default).
-"/bad" changes the current mode to bad.
+"/bad" changes the current mode to bad. In this mode, the rolls are slightly lower on average.
 
 "/sort" enables "sort" mode.
 "/sort d" enables descending sort.
@@ -117,7 +117,7 @@ def splitbysigns(st):
         st = st.strip()
         st = st.split(maxsplit=1)
         if st[0][0] != "x":
-            raise Exception("Wrong posiiton of rolls number ('x')")
+            raise Exception("Wrong position of rolls number ('x')")
         try:
             numtimes = int(st[0][1:])
         except Exception:
@@ -437,7 +437,7 @@ def stringify(d, r, modifier, sort):
     for i in r:
             ci = max(d.lowconstr, min(d.highconstr, i+modifier))
             if not fate and modifier != 0 or fate and modifier != -2 or ci != i+modifier:
-                res += "{}({}), ".format(ci, numform(i))
+                res += "<b>{}</b>({}), ".format(ci, numform(i))
             else:
                 res += "{}, ".format(numform(i))
     res = res[:-2] + "]"
@@ -524,7 +524,7 @@ def roll(d, sign, mode, sort, count):
                     v = u
                 else:
                     v = u + d.modifier
-            res += "[{}: x{}], ".format(v, c)
+            res += "[<b>{}</b>: x{}], ".format(v, c)
         res = res[:-2] + "\n"
 
     if d.drop + d.highdrop > 0:
@@ -532,12 +532,12 @@ def roll(d, sign, mode, sort, count):
     
     if d.threshold:
         successes = sum(i in d.threshold for i in r)
-        res += "Successes: {}\n".format(successes)
+        res += "Successes: <b>{}</b>\n".format(successes)
     if d.failure:
         failures = sum(i in d.failure for i in r)
-        res += "Failures: {}\n".format(failures)
+        res += "Failures: <b>{}</b>\n".format(failures)
     if d.threshold and d.failure:
-        res += "Net successes: {}\n".format(successes-failures)
+        res += "Total successes: <b>{}</b>\n".format(successes-failures)
     return total, res
 
 def parseandroll(st, mode, sort, count):
@@ -579,7 +579,7 @@ def parseandroll(st, mode, sort, count):
         if totalst[0] == "+":
             totalst = totalst[1:]
         if len(parts) > 1:
-            res += "Total: {} = {}\n".format(totalst, total)
+            res += "Total: {} = <b>{}</b>\n".format(totalst, total)
         if _ < numtimes-1:
             res += "\n"
     res = res[:-1]
@@ -655,7 +655,7 @@ def dice(bot, update):
                 counts[update.message.chat.id] = 0
                 count = 0
             finally:
-                update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort, count))
+                update.message.reply_text(("" if mode == 0 else "{} mode:\n".format("Bad" if mode == -1 else "Good")) + parseandroll(update.message.text[update.message.text.find(' ')+1:], mode, sort, count), parse_mode = "HTML")
 
 def d(bot, update):
     dice(bot, update)
