@@ -447,12 +447,16 @@ def rerollexplode(d, r, total, res, mode, sort):
     toreroll = 0
     toexplode = 0
     
+    co = []
+    
     for i in range(0, len(r)):
         if r[i]+d.modifier < d.lowconstr:
             total += d.lowconstr - r[i]-d.modifier
+            co.append(r[i])
             r[i] = d.lowconstr - d.modifier
         if r[i]+d.modifier > d.highconstr:
             total -= r[i]+d.modifier - d.highconstr
+            co.append(r[i])
             r[i] = d.highconstr - d.modifier
 
     rr = r[:]
@@ -480,11 +484,12 @@ def rerollexplode(d, r, total, res, mode, sort):
         r1 = rolldie(toexplode, d.die, mode)
         res += "!"+stringify(d, r1, d.modifier, sort)
         total += sum(r1)+len(r1)*d.modifier
-        r2, total, res = rerollexplode(d, r1, total, res, mode, sort)
+        r2, total, res, co2 = rerollexplode(d, r1, total, res, mode, sort)
         r += r2
+        co += co2
     
-    return r, total, res
-
+    return r, total, res, co
+    
 def roll(d, sign, mode, sort, count, fl):
     global fate
     fate = 0
@@ -496,7 +501,7 @@ def roll(d, sign, mode, sort, count, fl):
     r = rolldie(d.amount, d.die, mode)
     res = stringify(d, r, d.modifier, sort)
     total = sum(r)+len(r)*d.modifier
-    r, total, res = rerollexplode(d, r, total, res, mode, sort)
+    r, total, res, co = rerollexplode(d, r, total, res, mode, sort)
     
     if d.drop + d.highdrop > len(r):
         raise Exception("More dice dropped than rolled")
@@ -511,9 +516,27 @@ def roll(d, sign, mode, sort, count, fl):
             total -= i
     
     total *= sign
-    res += " = {}\n".format(("{}" if fl else "<b>{}</b>").format(total))
+    res+= " = {}\n".format(("{}" if fl else "<b>{}</b>").format(total))
 
     if count > 0:
+    
+        if count == 2 and d.drop+d.highdrop > 0 and d.drop+d.highdrop < len(co):
+            co.sort()
+            for i in range(0, d.drop):
+                if co[i]+d.modifier < d.lowconstr:
+                    co = co[1:]
+                    r.remove(d.lowconstr)
+                else:
+                    break
+            co.sort(reverse = True)
+            for i in range(0, d.highdrop):
+                if co[i]+d.modifier > d.highconstr:
+                    co = co[1:]
+                    r.remove(d.highconstr)
+                else:
+                    break
+            r += co
+        
         uniques = sorted(list(set(r)), reverse = (sort == -1))
         for u in uniques:
             c = r.count(u)
@@ -524,7 +547,7 @@ def roll(d, sign, mode, sort, count, fl):
                     v = u
                 else:
                     v = u + d.modifier
-            res += "[<b>{}</b>: x{}], ".format(v, c)
+            res += "[{}: x{}], ".format(v, c)
         res = res[:-2] + "\n"
 
     if d.drop + d.highdrop > 0:
@@ -537,8 +560,9 @@ def roll(d, sign, mode, sort, count, fl):
         failures = sum(i in d.failure for i in r)
         res += "Failures: <b>{}</b>\n".format(failures)
     if d.threshold and d.failure:
-        res += "Total successes: <b>{}</b>\n".format(successes-failures)
+        res += "Net successes: <b>{}</b>\n".format(successes-failures)
     return total, res
+
 
 def parseandroll(st, mode, sort, count):
     parts = splitbysigns(st)
@@ -660,31 +684,54 @@ def dice(bot, update):
 def d(bot, update):
     dice(bot, update)
 
+def parsex(t):
+    x = 1
+    res = ""
+    if t.strip().find(" ") == -1 or t.find('x') == -1 or len(t.strip().split()) < 3:
+        return 1, t
+    s = t.strip().split(maxsplit = 2)
+    sx = s[1]
+    if sx == "":
+        return 1, t
+    if sx[0] != 'x':
+        return 1, t
+    try:
+        x = int(sx[1:])
+    except Exception:
+        return 1, t
+            
+    res = s[0] + " " + s[2]
+    return x, res
+
 def f(bot, update):
-    t = update.message.text
-    res = "/dice 4dF"
-    x = 0
-    if t.strip().find(" ") != -1:
-        try:
-            x = int(t[t.find(" ")+1:])
-        except Exception:
-            update.message.reply_text("Bad syntax")
-            return
-    if x > 0:
-        res += "+"
-    if x != 0:
-        res += str(x)
-    update.message.text = res
-    dice(bot, update)
+	t = update.message.text
+	n, t = parsex(t)
+	res = "/dice x{} 4dF".format(n)
+	x = 0
+	if t.strip().find(" ") != -1:
+            try:
+                x = int(t[t.find(" ")+1:])
+            except Exception:
+                update.message.reply_text("Bad syntax")
+                return
+	if x > 0:
+            res += "+"
+	if x != 0:
+            res += str(x)
+	update.message.text = res
+	dice(bot, update)
 	
 def g(bot, update):
-    update.message.text = "/dice 3d6"
+    n, _ = parsex(update.message.text)
+    update.message.text = "/dice x{} 3d6".format(n)
     dice(bot, update)
 	
 def n(bot, update):
     x = 0
     y = 10
-    t = update.message.text.split()
+    t = update.message.text
+    n, t = parsex(t)
+    t = t.split()
     try:
         x = int(t[1])
         if len(t) > 2:
@@ -692,14 +739,16 @@ def n(bot, update):
     except Exception:
         update.message.reply_text("Bad syntax")
         return
-    update.message.text = "/dice {}d10t>=8!>={}".format(x, y)
+    update.message.text = "/dice x{} {}d10t>=8!>={}".format(n, x, y)
     dice(bot, update)
 	
 def w(bot, update):
     x = 0
     y = 6
     z = 0
-    t = update.message.text.split()
+    t = update.message.text
+    n, t = parsex(t)
+    t = t.split()
     try:
         x = int(t[1])
         if len(t) > 2:
@@ -709,7 +758,7 @@ def w(bot, update):
     except Exception:
         update.message.reply_text("Bad syntax")
         return
-    res = "/dice {}d10t>={}f1".format(x, y)
+    res = "/dice x{} {}d10t>={}f1".format(n, x, y)
     if z > 0:
         res += "!>={}".format(z)
     update.message.text = res
