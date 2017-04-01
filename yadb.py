@@ -560,7 +560,7 @@ def roll(d, sign, mode, sort, count, fl):
         failures = sum(i in d.failure for i in r)
         res += "Failures: <b>{}</b>\n".format(failures)
     if d.threshold and d.failure:
-        res += "Net successes: <b>{}</b>\n".format(successes-failures)
+        res += "Total successes: <b>{}</b>\n".format(successes-failures)
     return total, res
 
 
