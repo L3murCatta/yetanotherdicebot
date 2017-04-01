@@ -511,7 +511,7 @@ def roll(d, sign, mode, sort, count):
             total -= i
     
     total *= sign
-    res += " = {}\n".format("{}" if len(parts) > 1 else "<b>{}</b>").format(total))
+    res += " = {}\n".format(("{}" if len(parts) > 1 else "<b>{}</b>").format(total))
 
     if count > 0:
         uniques = sorted(list(set(r)), reverse = (sort == -1))
