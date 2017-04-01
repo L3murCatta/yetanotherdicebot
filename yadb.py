@@ -511,7 +511,7 @@ def roll(d, sign, mode, sort, count):
             total -= i
     
     total *= sign
-    res+= " = {}\n".format(total)
+    res += " = {}\n".format("{}" if len(parts) > 1 else "<b>{}</b>").format(total))
 
     if count > 0:
         uniques = sorted(list(set(r)), reverse = (sort == -1))
@@ -717,85 +717,6 @@ def w(bot, update):
 
 def helpf(bot, update):
     update.message.reply_text(helptext)
-	
-#print(parseandroll("x2 10d4a1t>3f2 - 16d8!mt5 + 5d4kh2"))
-
-#"10d20a-5 +5d6!!+4!>3a-2r>-1 - 15 - 12d23t>3"
-#"123d43a-5t>=-23r<5!1!p<3!!5f<=5kl5d10"
-
-##digits = {0,1,2,3,4,5,6,7,8,9}
-
-##def nextNonDigit(msg, i):
-##    for j in range(i+1, len(msg)):
-##        if msg[j] not in digits:
-##            return c
-##    else:
-##        return -1
-
-##def parse(msg):
-##    if msg.find('d') == -1:
-##        n = int(msg)
-##        return '\n{}'.format(n), n
-
-##def merge(a):
-##    b = [a[0]]
-##    cnt = 0
-##    for i in range(1, len(a)):
-##        if a[i][-1] == 'a':
-##            b[cnt] += a[i]
-##        else:
-##            b.append(a[i])
-##            cnt += 1
-##    return b
-
-##def d(bot, update):
-##    resp = "{} rolls".format(update.message.from_user.username)
-##    for inst in merge(re.split('\+|-', update.message.text)):
-##        p = parse(inst)
-##        resp += p[0]
-##        total += p[1]
-##    update.message.reply_text(resp)
-
-##def dice(bot, update):
-##    message = update.message.text[update.message.text.find(' ')+1:]
-##    d = message.find('d')
-##    plus = message.find('+')
-##    minus = message.find('-')
-##    excl = message.find('!')
-##    excl = False
-##    doubleex = False
-##    if excl > -1:
-##        if message[excl+1] == '!':
-##            doubleex = True
-##        else:
-##            message = message[:excl]+message[excl+1:]
-##            excl = True
-##    if d == 0:
-##        num = 1
-##    else:
-##        num = int(message[:d])
-##    sign = max(plus, minus)
-##    if sign == -1:
-##        val = message[d+1:]
-##        mod = 0
-##    else:
-##        val = message[d+1:sign]
-##        mod = message[sign+1:]
-##        if message[sign] == '-':
-##            mod = '-' + mod
-##    res = [customrandom(1, int(val)) for i in range(num)]
-##    if excl:
-##        resp = '{} rolled: {}'.format(update.message.from_user.username, res)
-##        temp = list(filter(lambda x : x == int(val), res))
-##        while len(temp) > 0:
-##            temp = [customrandom(1, int(val)) for i in temp]
-##            res.extend(temp)
-##            resp += '\nrerolls: {}'.format(temp)
-##            temp = list(filter(lambda x : x == int(val), temp))
-##        resp += '\ntotal: {}'.format(sum(res))
-##        update.message.reply_text(resp)
-##    else:
-##        update.message.reply_text('{} rolled: {}, total: {}'.format(update.message.from_user.username, res, sum(res)+int(mod)))
 
 updater = Updater('379931845:AAH-3mrlthdNokUKRx21PZ6rmIiYZZGp5vY')
 
