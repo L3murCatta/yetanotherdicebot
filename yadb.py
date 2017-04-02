@@ -520,7 +520,7 @@ def roll(d, sign, mode, sort, count, fl):
 
     if count > 0:
     
-        if count == 2 and d.drop+d.highdrop > 0 and d.drop+d.highdrop < len(co):
+        if count == 2 and d.drop+d.highdrop < len(co):
             co.sort()
             for i in range(0, d.drop):
                 if co[i]+d.modifier < d.lowconstr:
@@ -547,7 +547,7 @@ def roll(d, sign, mode, sort, count, fl):
                     v = u
                 else:
                     v = u + d.modifier
-            res += "[{}: x{}], ".format(v, c)
+            res += "[<b>{}</b>: x{}], ".format(v, c)
         res = res[:-2] + "\n"
 
     if d.drop + d.highdrop > 0:
@@ -700,7 +700,10 @@ def parsex(t):
     except Exception:
         return 1, t
             
-    res = s[0] + " " + s[2]
+    if len(s)>2:
+    	res = s[0] + " " + s[2]
+    else:
+    	res = s[0]
     return x, res
 
 def f(bot, update):
