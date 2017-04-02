@@ -687,7 +687,7 @@ def d(bot, update):
 def parsex(t):
     x = 1
     res = ""
-    if t.strip().find(" ") == -1 or t.find('x') == -1 or len(t.strip().split()) < 3:
+    if t.strip().find(" ") == -1 or t.find('x') == -1 or len(t.strip().split()) < 2:
         return 1, t
     s = t.strip().split(maxsplit = 2)
     sx = s[1]
