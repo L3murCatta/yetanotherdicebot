@@ -43,7 +43,9 @@ Use "xN" notation right after the command (e. g. "/d x6 4d6d1") to do multiple i
 ========== SHORTCUTS ==========
 
 "/g" rolls 3d6 (GURPS roll).
+"/p" rolls d100 (percentile roll).
 "/f" rolls 4 Fate dice (FATE roll). "/f X" adds X to the roll.
+"/ff" rolls d6-d6 (alternative FATE roll). "/ff X" adds X to the roll.
 "/w X Y Z" rolls Xd10t>Yf1!>=Z (old World of Darkness roll). Only X is mandatory; Y is set at 6 by default.
 "/n X Y" rolls Xd10t>7!>=Y (new World of Darkness roll). Only X is mandatory; Y is set at 10 by default.
 
@@ -707,26 +709,49 @@ def parsex(t):
     return x, res
 
 def f(bot, update):
-	t = update.message.text
-	n, t = parsex(t)
-	res = "/dice x{} 4dF".format(n)
-	x = 0
-	if t.strip().find(" ") != -1:
-            try:
-                x = int(t[t.find(" ")+1:])
-            except Exception:
-                update.message.reply_text("Bad syntax")
-                return
-	if x > 0:
-            res += "+"
-	if x != 0:
-            res += str(x)
-	update.message.text = res
-	dice(bot, update)
+    t = update.message.text
+    n, t = parsex(t)
+    res = "/dice x{} 4dF".format(n)
+    x = 0
+    if t.strip().find(" ") != -1:
+        try:
+            x = int(t[t.find(" ")+1:])
+        except Exception:
+            update.message.reply_text("Bad syntax")
+            return
+    if x > 0:
+        res += "+"
+    if x != 0:
+        res += str(x)
+    update.message.text = res
+    dice(bot, update)
+
+def ff(bot, update):
+    t = update.message.text
+    n, t = parsex(t)
+    res = "/dice x{} d6-d6".format(n)
+    x = 0
+    if t.strip().find(" ") != -1:
+        try:
+            x = int(t[t.find(" ")+1:])
+        except Exception:
+            update.message.reply_text("Bad syntax")
+            return
+    if x > 0:
+        res += "+"
+    if x != 0:
+        res += str(x)
+    update.message.text = res
+    dice(bot, update)   
 	
 def g(bot, update):
     n, _ = parsex(update.message.text)
     update.message.text = "/dice x{} 3d6".format(n)
+    dice(bot, update)
+
+def p(bot, update):
+    n, _ = parsex(update.message.text)
+    update.message.text = "/dice x{} d100".format(n)
     dice(bot, update)
 	
 def n(bot, update):
