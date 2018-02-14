@@ -795,7 +795,7 @@ def w(bot, update):
 def helpf(bot, update):
     update.message.reply_text(helptext)
 
-updater = Updater('379931845:AAH-3mrlthdNokUKRx21PZ6rmIiYZZGp5vY')
+updater = Updater('379931845:AAE063r0aMOGrHgyHP_F9-9Sll4ckeNTD1U')
 
 updater.dispatcher.add_handler(CommandHandler('dice', dice))
 updater.dispatcher.add_handler(CommandHandler('d', d))
