@@ -12,9 +12,9 @@ sorts = {}
 counts = {}
 helptext = """========== MODES ==========
 
-"/good" changes the current mode to good. In this mode, the rolls are slightly higher on average.
-"/normal" resets the current mode to normal (set by default).
-"/bad" changes the current mode to bad. In this mode, the rolls are slightly lower on average.
+"/mode good" changes the current mode to good. In this mode, the rolls are slightly higher on average.
+"/mode normal" resets the current mode to normal (set by default).
+"/mode bad" changes the current mode to bad. In this mode, the rolls are slightly lower on average.
 
 "/sort" enables "sort" mode.
 "/sort d" enables descending sort.
@@ -647,20 +647,41 @@ def countf(bot, update):
     counts[update.message.chat.id] = 1
     update.message.reply_text("Counting enabled")
 
-def good(bot, update):
-    global modes
-    modes[update.message.chat.id] = 1
-    update.message.reply_text("Commencing good mode")
+#def good(bot, update):
+#    global modes
+#    modes[update.message.chat.id] = 1
+#    update.message.reply_text("Commencing good mode")
 
-def normal(bot, update):
-    global modes
-    modes[update.message.chat.id] = 0
-    update.message.reply_text("Commencing normal mode")
+#def normal(bot, update):
+#    global modes
+#    modes[update.message.chat.id] = 0
+#    update.message.reply_text("Commencing normal mode")
 
-def bad(bot, update):
+#def bad(bot, update):
+#    global modes
+#    modes[update.message.chat.id] = -1
+#    update.message.reply_text("Commencing bad mode")
+
+def modef(bot, update):
     global modes
-    modes[update.message.chat.id] = -1
-    update.message.reply_text("Commencing bad mode")
+    if update.message.text.strip().find(' ') == -1:
+        update.message.reply_text("No mode specified")
+        return
+    t = update.message.text[update.message.text.find(' ')+1:]
+    if t == "good":
+        modes[update.message.chat.id] = 1
+        update.message.reply_text("Commencing good mode")
+        return
+    if t == "normal":
+        modes[update.message.chat.id] = 0
+        update.message.reply_text("Commencing normal mode")
+        return
+    if t == "bad":
+        modes[update.message.chat.id] = -1
+        update.message.reply_text("Commencing bad mode")
+        return
+    update.message.reply_text("Mode not recognized")
+    return
 
 def dice(bot, update):
     try:
@@ -799,9 +820,10 @@ updater = Updater('379931845:AAE063r0aMOGrHgyHP_F9-9Sll4ckeNTD1U')
 
 updater.dispatcher.add_handler(CommandHandler('dice', dice))
 updater.dispatcher.add_handler(CommandHandler('d', d))
-updater.dispatcher.add_handler(CommandHandler('good', good))
-updater.dispatcher.add_handler(CommandHandler('normal', normal))
-updater.dispatcher.add_handler(CommandHandler('bad', bad))
+#updater.dispatcher.add_handler(CommandHandler('good', good))
+#updater.dispatcher.add_handler(CommandHandler('normal', normal))
+#updater.dispatcher.add_handler(CommandHandler('bad', bad))
+updater.dispatcher.add_handler(CommandHandler('mode', modef))
 updater.dispatcher.add_handler(CommandHandler('sort', sortf))
 updater.dispatcher.add_handler(CommandHandler('count', countf))
 updater.dispatcher.add_handler(CommandHandler('f', f))
