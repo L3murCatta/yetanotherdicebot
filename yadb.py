@@ -2,6 +2,7 @@ from datetime import date
 from secrets import choice
 from requests import post
 from telegram.ext import Updater, CommandHandler
+import os
 
 numtimes = 1
 fate = 0
