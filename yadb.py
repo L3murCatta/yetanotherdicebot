@@ -816,7 +816,7 @@ def w(bot, update):
 def helpf(bot, update):
     update.message.reply_text(helptext)
 
-updater = Updater('379931845:AAE063r0aMOGrHgyHP_F9-9Sll4ckeNTD1U')
+updater = Updater(os.getenv('API_TOKEN', 'oops_no_token'))
 
 updater.dispatcher.add_handler(CommandHandler('dice', dice))
 updater.dispatcher.add_handler(CommandHandler('d', d))
